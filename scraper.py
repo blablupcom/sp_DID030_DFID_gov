@@ -84,7 +84,7 @@ def convert_mth_strings ( mth_string ):
 #### VARIABLES 1.0
 
 entity_id = "DID030_DFID_gov"
-url = "https://www.gov.uk/government/collections/monthly-spend-over-500-in-the-department-for-international-development"
+url = "https://www.gov.uk/government/collections/monthly-spend-over-500-in-the-department-for-international-development#spend-over-£500-in-2016"
 errors = 0
 data = []
 
@@ -96,28 +96,17 @@ soup = BeautifulSoup(html, 'lxml')
 
 #### SCRAPE DATA
 
-blocks = soup.findAll('li', {'class':'publication document-row'})
+blocks = soup.findAll('h3', 'group-document-list-item-title')
 for block in blocks:
-    link = block.a['href']
-    pageUrl = link.replace("/government","http://www.gov.uk/government")
-    html2 = urllib2.urlopen(pageUrl)
+    link_text = block.a.text.strip().split('500')[-1].strip().replace(', ', '').replace('for ', '').strip()
+    csvYr = link_text[-4:]
+    csvMth = link_text[:3]
+    link = 'https://www.gov.uk'+block.a['href']
+    html2 = urllib2.urlopen(link)
     soup2 = BeautifulSoup(html2, 'lxml')
-    fileBlocks = soup2.findAll('div',{'class':'attachment-details'})
-    for fileBlock in fileBlocks:
-        fileUrl = fileBlock.a['href']
-        fileUrl = fileUrl.replace("/government","http://www.gov.uk/government")
-        fileUrl = fileUrl.replace(".csv/preview",".csv")
-        title = fileBlock.h2.contents[0]
-        titleTest = title.find('Download CSV')
-        if titleTest == None:
-            pass
-        else:
-            title = title.upper().strip()
-            csvYr = title.split(' ')[-1]
-            csvYr = csvYr.replace("200","20")
-            csvMth = title.split(' ')[-2][:3]
-            csvMth = convert_mth_strings(csvMth.upper())
-            data.append([csvYr, csvMth, fileUrl])
+    url = 'https://www.gov.uk'+soup2.select_one('span.download a')['href']
+    csvMth = convert_mth_strings(csvMth.upper())
+    data.append([csvYr, csvMth, url])
 
 #### STORE DATA 1.0
 
