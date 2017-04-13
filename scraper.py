@@ -104,7 +104,7 @@ for block in blocks:
     link = 'https://www.gov.uk'+block.a['href']
     html2 = urllib2.urlopen(link)
     soup2 = BeautifulSoup(html2, 'lxml')
-    url = 'https://www.gov.uk'+soup2.select_one('span.download a')['href']
+    url = 'https://www.gov.uk'+soup2.find('span', 'download').find('a')['href']
     csvMth = convert_mth_strings(csvMth.upper())
     data.append([csvYr, csvMth, url])
 
